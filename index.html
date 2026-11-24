@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>График поездок в магазины — Академия УМ</title>
+  <meta name="description" content="Утвержденный график отгрузок товаров с РЦ в магазины. До обеда и после обеда, один магазин — один цвет." />
+  <meta name="theme-color" content="#4208A8" />
+  <meta name="published" content="2026-11-24" />
+  <link rel="icon" href="favicon.ico" />
+  <link rel="stylesheet" href="brand.css" />
+  <link rel="stylesheet" href="page.css" />
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./">
+      <img class="logo" src="assets/logo.png" alt="У Михалыча" width="280" height="35" />
+      <span class="brand-text">
+        <h1>Академия УМ</h1>
+        <p class="sub">График поездок в магазины</p>
+      </span>
+    </a>
+    <div class="header-end">
+      <div class="pub-date">
+        <span class="lbl">опубликовано</span>
+        <time datetime="2026-11-24">24.11.2026</time>
+      </div>
+    </div>
+  </header>
+
+  <main class="board-page">
+    <section class="hero-brand" aria-label="У Михалыча">
+      <div class="motto-pad">
+        <p class="motto-kicker">РЦ и логистика</p>
+        <p class="motto">Делаем мир крепче</p>
+        <p class="motto-lead">Утвержденный график отгрузок товаров с РЦ в магазины.</p>
+      </div>
+    </section>
+
+    <p class="callout" id="focus-hint">Нажмите магазин в легенде — подсветятся все его дни.</p>
+
+    <div class="read">
+      <p class="read-item am"><b>До обеда</b><span>светлая полоса сверху</span></p>
+      <p class="read-item pm"><b>После обеда</b><span>фиолетовая полоса снизу</span></p>
+    </div>
+
+    <div class="kin">
+      <p><b>Пн и чт</b> — один круг. Перевалово только в понедельник.</p>
+      <p><b>Вт и пт</b> — один круг. Талица только в пятницу.</p>
+      <p><b>Среда</b> — дальние: Курган, Ялуторовск, Заводоуковск.</p>
+    </div>
+
+    <p class="who">Все вопросы по рейсам, машинам и водителям решает логист <a href="https://crm.gvozditut.ru/company/personal/user/17235/" target="_blank" rel="noopener">Анастасия Панова</a>.</p>
+
+    <div class="tools">
+      <div class="filters" role="group" aria-label="Какую половину дня показать">
+        <button type="button" class="is-on" data-part="all">Весь день</button>
+        <button type="button" data-part="am">До обеда</button>
+        <button type="button" data-part="pm">После обеда</button>
+      </div>
+    </div>
+
+    <div class="legend" id="legend">
+      <section>
+        <h2>Пн / чт</h2>
+        <div class="chips" id="legend-a"></div>
+      </section>
+      <section>
+        <h2>Вт / пт</h2>
+        <div class="chips" id="legend-b"></div>
+      </section>
+      <section>
+        <h2>Среда</h2>
+        <div class="chips" id="legend-c"></div>
+      </section>
+    </div>
+
+    <div class="board" id="week"></div>
+  </main>
+
+  <script>
+    var STORES = {
+      druzhby: { name: "Дружбы 66", color: "#6B3FA0", group: "a" },
+      santeh: { name: "Сантехника", color: "#AD1457", group: "a" },
+      reshetnikova: { name: "Решетникова", color: "#D64545", group: "a" },
+      bereznyaki: { name: "Березняки", color: "#2E9E57", group: "a" },
+      lugovoe: { name: "Луговое", color: "#3D7EBF", group: "a" },
+      tyunevo: { name: "Тюнево", color: "#E06BB0", group: "a" },
+      chayka: { name: "Чайка", color: "#1AA6B8", group: "a" },
+      embaevo: { name: "Ембаево", color: "#E07A2F", group: "a" },
+      perevalovo: { name: "Перевалово", color: "#6B8F2A", group: "a" },
+      borovsky: { name: "Боровский", color: "#2C3E88", group: "b" },
+      vinzili: { name: "Винзили", color: "#E2552D", group: "b" },
+      avtoremont: { name: "Авторемонтная", color: "#3AAFA0", group: "b" },
+      babarynka: { name: "Бабарынка", color: "#C4A01A", group: "b" },
+      talica: { name: "Талица", color: "#8E3D6B", group: "b" },
+      respubliki: { name: "Республики", color: "#C4527A", group: "b" },
+      tobolskiy: { name: "Антипино", color: "#8A5A44", group: "b" },
+      moskovskiy: { name: "Московский тракт", color: "#1F4E79", group: "b" },
+      malkovo: { name: "Мальково", color: "#C65D12", group: "b" },
+      kurganOmsk: { name: "Курган · Омская", color: "#5C4A32", group: "c" },
+      chervishevo: { name: "Червишево", color: "#B03A3A", group: "c" },
+      zavod: { name: "Заводоуковск", color: "#1F7A4D", group: "c" },
+      yalutorovsk: { name: "Ялуторовск", color: "#7A3E9D", group: "c" },
+      ushakova: { name: "Ушакова", color: "#3D5A80", group: "c" },
+      kurganUtyat: { name: "Курган · Утятская", color: "#A36B12", group: "c" },
+      ozhogino: { name: "Ожогино", color: "#E8A838", group: "c" },
+      uspenka: { name: "Успенка", color: "#3E5C3A", group: "c" }
+    };
+
+    var DAYS = [
+      {
+        wd: 1, title: "Понедельник",
+        am: [
+          { id: "druzhby" },
+          { id: "santeh" },
+          { id: "reshetnikova", n: 4 },
+          { id: "bereznyaki", n: 5 },
+          { id: "lugovoe", n: 6 }
+        ],
+        pm: [
+          { id: "tyunevo", n: 2 },
+          { id: "chayka", n: 3 },
+          { id: "embaevo", n: 7 },
+          { id: "perevalovo", n: 8 }
+        ]
+      },
+      {
+        wd: 2, title: "Вторник",
+        am: [
+          { id: "borovsky", n: 1 },
+          { id: "vinzili", n: 2 },
+          { id: "avtoremont", n: 4 },
+          { id: "babarynka", n: 5 }
+        ],
+        pm: [
+          { id: "respubliki", n: 3 },
+          { id: "tobolskiy", n: 6 },
+          { id: "moskovskiy", n: 7 },
+          { id: "malkovo", n: 8 }
+        ]
+      },
+      {
+        wd: 3, title: "Среда",
+        am: [
+          { id: "kurganOmsk", n: 1 },
+          { id: "chervishevo", n: 2 },
+          { id: "zavod", n: 3 },
+          { id: "yalutorovsk", n: 4 },
+          { id: "ushakova", n: 7 },
+          { id: "kurganUtyat", n: 8 }
+        ],
+        pm: [
+          { id: "ozhogino", n: 5 },
+          { id: "uspenka", n: 6 }
+        ]
+      },
+      {
+        wd: 4, title: "Четверг",
+        am: [
+          { id: "druzhby" },
+          { id: "santeh" },
+          { id: "reshetnikova", n: 4 },
+          { id: "bereznyaki", n: 5 },
+          { id: "lugovoe", n: 6 }
+        ],
+        pm: [
+          { id: "tyunevo", n: 2 },
+          { id: "chayka", n: 3 },
+          { id: "embaevo", n: 7 }
+        ]
+      },
+      {
+        wd: 5, title: "Пятница",
+        am: [
+          { id: "borovsky", n: 1 },
+          { id: "vinzili", n: 2 },
+          { id: "avtoremont", n: 4 },
+          { id: "babarynka", n: 5 },
+          { id: "talica", n: 9 }
+        ],
+        pm: [
+          { id: "respubliki", n: 3 },
+          { id: "tobolskiy", n: 6 },
+          { id: "moskovskiy", n: 7 },
+          { id: "malkovo", n: 8 }
+        ]
+      }
+    ];
+
+    function stopHtml(stop) {
+      var s = STORES[stop.id];
+      var extra = s.extra ? '<em class="extra">' + s.extra + "</em>" : "";
+      return (
+        '<article class="stop" data-store="' + stop.id + '" style="--c:' + s.color + '">' +
+          "<strong>" + s.name + "</strong>" + extra +
+        "</article>"
+      );
+    }
+
+    function halfHtml(part) {
+      var label = part === "am" ? "До обеда" : "После обеда";
+      var days = DAYS.map(function (day) {
+        return (
+          '<section class="day" data-wd="' + day.wd + '">' +
+            "<header><b>" + day.title + "</b></header>" +
+            '<div class="stops">' + day[part].map(stopHtml).join("") + "</div>" +
+          "</section>"
+        );
+      }).join("");
+      return (
+        '<section class="half ' + part + '">' +
+          "<h2>" + label + "</h2>" +
+          '<div class="week">' + days + "</div>" +
+        "</section>"
+      );
+    }
+
+    var week = document.getElementById("week");
+    week.innerHTML = halfHtml("am") + halfHtml("pm");
+
+    ["a", "b", "c"].forEach(function (group) {
+      var box = document.getElementById("legend-" + group);
+      Object.keys(STORES).forEach(function (id) {
+        var s = STORES[id];
+        if (s.group !== group) return;
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "chip";
+        btn.setAttribute("data-store", id);
+        btn.style.setProperty("--c", s.color);
+        var note = s.note ? "<small>" + s.note + "</small>" : "";
+        if (s.note) btn.classList.add("has-note");
+        btn.innerHTML = "<i></i><span>" + s.name + note + "</span>";
+        box.appendChild(btn);
+      });
+    });
+
+    var focus = "";
+    function paint() {
+      document.body.setAttribute("data-focus", focus);
+      document.querySelectorAll("[data-store]").forEach(function (el) {
+        el.classList.toggle("is-on", !!focus && el.getAttribute("data-store") === focus);
+      });
+      var hint = document.getElementById("focus-hint");
+      hint.textContent = focus
+        ? STORES[focus].name + " подсвечен во всех днях. Нажмите ещё раз, чтобы снять."
+        : "Нажмите магазин в легенде — подсветятся все его дни.";
+    }
+
+    document.getElementById("legend").addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-store]");
+      if (!btn) return;
+      var id = btn.getAttribute("data-store");
+      focus = focus === id ? "" : id;
+      paint();
+    });
+
+    week.addEventListener("click", function (e) {
+      var card = e.target.closest(".stop");
+      if (!card) return;
+      var id = card.getAttribute("data-store");
+      focus = focus === id ? "" : id;
+      paint();
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && focus) {
+        focus = "";
+        paint();
+      }
+    });
+
+    document.querySelectorAll(".filters button").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll(".filters button").forEach(function (b) { b.classList.remove("is-on"); });
+        btn.classList.add("is-on");
+        document.body.setAttribute("data-part", btn.getAttribute("data-part"));
+      });
+    });
+
+    (function markToday() {
+      var js = new Date().getDay();
+      var wd = js === 0 ? 7 : js;
+      document.querySelectorAll('.day[data-wd="' + wd + '"]').forEach(function (day) {
+        day.classList.add("is-today");
+        var mark = document.createElement("span");
+        mark.className = "today";
+        mark.textContent = "сегодня";
+        day.querySelector("header").appendChild(mark);
+      });
+    })();
+  </script>
+</body>
+</html>
